@@ -439,7 +439,7 @@ function card(s,i,o){
   const rec=o.rec?'<span class="rec">★ rec</span>':'';
   const tag=o.tag?`<span class="tag">${o.tag}</span>`:'';
   const meta=o.meta?`<div class="meta">${o.meta}</div>`:'';
-  const vid=o.media?`<video class="vid" src="${o.media}" muted loop playsinline preload="metadata"></video>`:'';
+  const vid=o.media?`<video class="vid" data-src="${o.media}" poster="${o.media.replace(/\.mp4$/,'.jpg')}" muted loop playsinline webkit-playsinline preload="none"></video>`:'';
   const note=s.notes?`<div class="note"><label>your note (optional)</label><textarea placeholder="note on this pick..."></textarea></div>`:'';
   el.innerHTML=`<div class="row"><div class="tick">${CHECK}</div><div class="body">${vid}<div class="name">${o.name}${rec}${tag}</div>${meta}<div class="desc">${o.desc||''}</div>${note}</div></div>`;
   el.addEventListener('click',e=>{ if(e.target.tagName==='TEXTAREA')return; toggle(s,i,el); });
@@ -480,8 +480,9 @@ document.getElementById('copy').addEventListener('click',async()=>{
   const b=document.getElementById('copy'); b.classList.add('done'); b.textContent='Copied · paste it to Claude'; setTimeout(()=>{ if(!b.disabled){b.classList.remove('done'); b.textContent='Copy prompt';} },2600);
 });
 update();
-const io=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target; if(e.isIntersecting){v.play().catch(()=>{});} else {v.pause();}}),{threshold:.25});
-document.querySelectorAll('video.vid').forEach(v=>io.observe(v));
+// lazy video: the poster is the loaded state; the file is attached only while the card is on screen, and released when it leaves, so phones and long pages never run out of decoders
+const io=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target; if(e.isIntersecting){ if(!v.getAttribute('src')){v.setAttribute('src',v.dataset.src);} v.play().catch(()=>{}); } else { v.pause(); if(v.getAttribute('src')){v.removeAttribute('src'); v.load();} }}),{threshold:.2, rootMargin:'200px 0px'});
+document.querySelectorAll('video.vid').forEach(v=>{io.observe(v); v.addEventListener('click',ev=>{ev.stopPropagation(); if(!v.getAttribute('src')){v.setAttribute('src',v.dataset.src);} v.paused?v.play().catch(()=>{}):v.pause();});});
 </script>
 </body>
 </html>
