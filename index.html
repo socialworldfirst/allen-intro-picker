@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Allen intro picks</title>
+<style>
+  :root{--ink:#16181d;--ink2:#3c4148;--mut:#71777f;--faint:#9aa0a6;--line:#e7e7e4;--bg:#fbfbf9;--card:#fff;--ok:#3f7d58;--accent:#16181d;--rec:#b07a2b;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:120px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:48px 24px 0}
+  h1{font-size:27px;letter-spacing:-.02em;font-weight:650;margin-bottom:8px}
+  .lede{color:var(--ink2);font-size:15.5px;max-width:64ch;margin-bottom:6px}
+  .stamp{color:var(--faint);font-size:12.5px;margin-bottom:8px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);font-weight:650;margin:40px 0 4px;display:flex;align-items:baseline;gap:10px}
+  .ct{font-size:12px;color:var(--faint);letter-spacing:.02em;text-transform:none;font-weight:500}
+  .ct.full{color:var(--ok)}
+  .sub{color:var(--mut);font-size:13.5px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px 17px;margin-bottom:11px;cursor:pointer;transition:border-color .12s,box-shadow .12s;position:relative}
+  .card:hover{border-color:#cfd2cc}
+  .card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .card.disabled{opacity:.45;cursor:not-allowed}
+  .row{display:flex;gap:13px;align-items:flex-start}
+  .tick{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid #c4c4bf;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:.12s}
+  .radio .tick{border-radius:50%}
+  .tick svg{width:12px;height:12px;opacity:0;transition:.12s}
+  .card.sel .tick{background:var(--accent);border-color:var(--accent)}
+  .card.sel .tick svg{opacity:1}
+  .body{flex:1;min-width:0}
+  .name{font-weight:600;font-size:15px;letter-spacing:-.01em}
+  .name .rec{font-size:11px;color:var(--rec);font-weight:650;margin-left:8px}
+  .name .tag{font-size:11px;color:var(--ok);font-weight:650;margin-left:8px}
+  .meta{font-size:12.5px;color:var(--faint);font-family:ui-monospace,Menlo,monospace;margin:1px 0 6px}
+  .desc{font-size:13.5px;color:var(--ink2);line-height:1.5}
+  .desc b{color:var(--ink);font-weight:600}
+  .vid{display:block;width:100%;max-width:640px;aspect-ratio:16/9;border-radius:9px;background:#111;margin:0 0 10px;object-fit:cover}
+  .pair .vid{max-width:100%}
+  .note{margin-top:11px;display:none}
+  .card.sel .note{display:block}
+  .note label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600;display:block;margin-bottom:5px}
+  .note textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:13px/1.45 inherit;resize:vertical;min-height:34px;color:var(--ink);background:#fcfcfa}
+  .note textarea:focus{outline:none;border-color:var(--mut)}
+  .global{margin-top:20px}
+  .global label{font-size:13px;color:var(--mut);font-weight:600;display:block;margin-bottom:7px}
+  .global textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font:14px/1.5 inherit;resize:vertical;min-height:60px;background:var(--card)}
+  .global textarea:focus{outline:none;border-color:var(--mut)}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(251,251,249,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 24px}
+  .bar-in{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:16px;justify-content:space-between}
+  .status{font-size:13px;color:var(--mut)} .status b{color:var(--ink)}
+  .btn{border:0;background:var(--ink);color:#fff;font:600 14px/1 inherit;padding:13px 22px;border-radius:10px;cursor:pointer;transition:.12s;white-space:nowrap}
+  .btn:disabled{background:#c8cdc6;cursor:not-allowed}
+  .btn.done{background:var(--ok)}
+  @media(max-width:620px){.wrap{padding:32px 16px 0}.bar-in{flex-direction:column;align-items:stretch;gap:10px}.btn{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title"></h1>
+  <p class="lede" id="intro"></p>
+  <p class="stamp" id="stamp"></p>
+  <div id="sections"></div>
+  <div class="global" id="globalWrap" style="display:none">
+    <label id="gnoteLabel"></label>
+    <textarea id="gnote"></textarea>
+  </div>
+</div>
+<div class="bar"><div class="bar-in">
+  <div class="status" id="status"></div>
+  <button class="btn" id="copy" disabled>Copy prompt</button>
+</div></div>
+<script>
+const DECK = {
+ "title": "Allen intro: what comes after the studio",
+ "intro": "Tick anything. The talking head, captions, lockup and sound stay as v3. Pick the scenes that follow the studio, the surfaces under the lockup, and the length. Add a note where the order or the treatment matters.",
+ "stamp": "21 Oct 2026 · previews are 1.4 s loops, graded as they would cut · v3 for reference: worldfirstinternal.org/allen-intro-style/",
+ "promptHeader": "allen intro picks",
+ "promptAction": "Build the cut from these picks: scenes in the order listed, surfaces as picked, at the picked length, then re-render and update the style page.",
+ "globalNote": {
+  "label": "Anything else",
+  "placeholder": "order, treatment, what is missing"
+ },
+ "sections": [
+  {
+   "key": "length",
+   "label": "Length of the intro",
+   "sub": "The reference is 5.8 s. One more second buys two scenes after the studio instead of two details.",
+   "pick": 1,
+   "notes": true,
+   "items": [
+    {
+     "name": "5.8 s, as the reference",
+     "meta": "145 frames",
+     "desc": "Studio 3.08 s, detail 0.68 s, detail 0.36 s, lockup 1.68 s.",
+     "rec": true
+    },
+    {
+     "name": "6.8 s, one second longer",
+     "meta": "170 frames",
+     "desc": "Studio 3.08 s, then three scenes (0.68 + 0.68 + 0.36 s) before the lockup, so Sydney and China can both land."
+    }
+   ]
+  },
+  {
+   "key": "owned",
+   "label": "After the studio: podcast shoot (owned)",
+   "sub": "Carved from the three interview cameras. Same room, same light as the talking head.",
+   "pick": 2,
+   "notes": true,
+   "items": [
+    {
+     "name": "His hands lifting off the chair arm",
+     "meta": "O1_his_hands",
+     "desc": "Camera A at the line, slowed, blur to sharp. The current v3 pick.",
+     "rec": false,
+     "tag": "",
+     "media": "media/O1_his_hands.mp4"
+    },
+    {
+     "name": "The floor lamp",
+     "meta": "O2_the_lamp",
+     "desc": "Camera A crop, soft. The still-life slot in v3.",
+     "rec": false,
+     "tag": "",
+     "media": "media/O2_the_lamp.mp4"
+    },
+    {
+     "name": "Sean listening",
+     "meta": "O5_host_sean_listening",
+     "desc": "The host angle, long interview. A reaction cut, the podcast made visible.",
+     "rec": true,
+     "tag": "",
+     "media": "media/O5_host_sean_listening.mp4"
+    },
+    {
+     "name": "Allen at the mic",
+     "meta": "O6_allen_podcast_angle",
+     "desc": "Guest angle from the long interview, different framing from the short-video cameras.",
+     "rec": false,
+     "tag": "",
+     "media": "media/O6_allen_podcast_angle.mp4"
+    },
+    {
+     "name": "The two-shot",
+     "meta": "O7_two_shot_wide",
+     "desc": "Wide: Sean and Allen in conversation, the whole room.",
+     "rec": true,
+     "tag": "",
+     "media": "media/O7_two_shot_wide.mp4"
+    },
+    {
+     "name": "The two-shot, tighter",
+     "meta": "O8_two_shot_tighter",
+     "desc": "Same wide camera, 1.4x crop on the two chairs and the side table.",
+     "rec": false,
+     "tag": "",
+     "media": "media/O8_two_shot_tighter.mp4"
+    },
+    {
+     "name": "The side table",
+     "meta": "O9_side_table_mugs",
+     "desc": "Two mugs and the marble cone, cropped from the wide. Soft.",
+     "rec": false,
+     "tag": "",
+     "media": "media/O9_side_table_mugs.mp4"
+    }
+   ]
+  },
+  {
+   "key": "trip",
+   "label": "After the studio: Allen's own China footage",
+   "sub": "His phone, his trip. Not stock, but phone-shot and vertical in places.",
+   "pick": 1,
+   "notes": true,
+   "items": [
+    {
+     "name": "Allen with the factory manager",
+     "meta": "T1_factory_with_manager",
+     "desc": "Walking the floor with the supplier. He is in the story.",
+     "rec": true,
+     "tag": "",
+     "media": "media/T1_factory_with_manager.mp4"
+    },
+    {
+     "name": "Allen at the factory compound",
+     "meta": "T2_factory_compound",
+     "desc": "Outside the plant, talking to camera.",
+     "rec": false,
+     "tag": "",
+     "media": "media/T2_factory_compound.mp4"
+    },
+    {
+     "name": "Canton Fair aisle",
+     "meta": "T3_canton_fair_aisle",
+     "desc": "Where his story starts (the man in the T-shirt). Vertical, cropped.",
+     "rec": false,
+     "tag": "",
+     "media": "media/T3_canton_fair_aisle.mp4"
+    },
+    {
+     "name": "Tea at the supplier dinner",
+     "meta": "T4_supplier_dinner_tea",
+     "desc": "Hands, teapot, lazy susan. A specific detail of doing business there.",
+     "rec": true,
+     "tag": "",
+     "media": "media/T4_supplier_dinner_tea.mp4"
+    },
+    {
+     "name": "Cleanroom corridor",
+     "meta": "T5_cleanroom_corridor",
+     "desc": "Hairnets and overshoes, walking in. Vertical, cropped.",
+     "rec": false,
+     "tag": "",
+     "media": "media/T5_cleanroom_corridor.mp4"
+    },
+    {
+     "name": "Assembly line",
+     "meta": "T6_assembly_line",
+     "desc": "Workers at benches, wide.",
+     "rec": false,
+     "tag": "",
+     "media": "media/T6_assembly_line.mp4"
+    },
+    {
+     "name": "Packing tables",
+     "meta": "T7_packing_tables",
+     "desc": "Boxes and tape, wide.",
+     "rec": false,
+     "tag": "",
+     "media": "media/T7_packing_tables.mp4"
+    },
+    {
+     "name": "Warehouse walk-in",
+     "meta": "T8_warehouse_walk_in",
+     "desc": "Vertical, cropped.",
+     "rec": false,
+     "tag": "",
+     "media": "media/T8_warehouse_walk_in.mp4"
+    },
+    {
+     "name": "Balm jar in hand",
+     "meta": "O3_balm_jar_in_hand",
+     "desc": "His product. v1 used it; Steven ruled product assets out of the logo scene, listed here for completeness.",
+     "rec": false,
+     "tag": "",
+     "media": "media/O3_balm_jar_in_hand.mp4"
+    },
+    {
+     "name": "Embossed product",
+     "meta": "O4_embossed_product",
+     "desc": "The CHEEKYGLO emboss. Same caveat.",
+     "rec": false,
+     "tag": "",
+     "media": "media/O4_embossed_product.mp4"
+    }
+   ]
+  },
+  {
+   "key": "sydney",
+   "label": "After the studio: Sydney (Pexels)",
+   "sub": "Where he lives. Two clips downloaded 21 Oct, Pexels Licence.",
+   "pick": 1,
+   "notes": true,
+   "items": [
+    {
+     "name": "Opera House with ferries",
+     "meta": "S1_opera_house_ferries",
+     "desc": "Static 4K scene, ferries crossing.",
+     "rec": true,
+     "tag": "",
+     "media": "media/S1_opera_house_ferries.mp4"
+    },
+    {
+     "name": "Harbour water, ferry wake",
+     "meta": "S2_harbour_water",
+     "desc": "Native crop of the water band from the same clip.",
+     "rec": false,
+     "tag": "",
+     "media": "media/S2_harbour_water.mp4"
+    }
+   ]
+  },
+  {
+   "key": "china",
+   "label": "After the studio: China sourcing (Pexels)",
+   "sub": "Already licensed for the Allen film. These are the ones that read as stock when they depict the words; use with care.",
+   "pick": 1,
+   "notes": true,
+   "items": [
+    {
+     "name": "Guangzhou aerial, Canton Tower",
+     "meta": "K1_guangzhou_canton_tower",
+     "desc": "The city, from above.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K1_guangzhou_canton_tower.mp4"
+    },
+    {
+     "name": "Pearl River skyline",
+     "meta": "K2_pearl_river_skyline",
+     "desc": "Static, river in front, towers behind. Source of the v3 surfaces.",
+     "rec": true,
+     "tag": "",
+     "media": "media/K2_pearl_river_skyline.mp4"
+    },
+    {
+     "name": "Production line",
+     "meta": "K3_production_line",
+     "desc": "Automated line, close.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K3_production_line.mp4"
+    },
+    {
+     "name": "Warehouse with workers",
+     "meta": "K4_warehouse_workers",
+     "desc": "Boxes, people small in frame.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K4_warehouse_workers.mp4"
+    },
+    {
+     "name": "Manufacturing line",
+     "meta": "K5_manufacturing_line",
+     "desc": "Punched in to hide a company name.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K5_manufacturing_line.mp4"
+    },
+    {
+     "name": "Filling line",
+     "meta": "K6_filling_line",
+     "desc": "Bottles on a line, 4K.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K6_filling_line.mp4"
+    },
+    {
+     "name": "Cargo ship at sea",
+     "meta": "K7_cargo_ship",
+     "desc": "Aerial, the v2 surface.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K7_cargo_ship.mp4"
+    },
+    {
+     "name": "Working machine",
+     "meta": "K8_working_machine",
+     "desc": "Teal filling machine.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K8_working_machine.mp4"
+    },
+    {
+     "name": "Packing hands",
+     "meta": "K9_packing_hands",
+     "desc": "v2 detail 1.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K9_packing_hands.mp4"
+    },
+    {
+     "name": "Parcels on a lane",
+     "meta": "K10_parcels_lane",
+     "desc": "v2 detail 2.",
+     "rec": false,
+     "tag": "",
+     "media": "media/K10_parcels_lane.mp4"
+    }
+   ]
+  },
+  {
+   "key": "surfaces",
+   "label": "Surfaces under the lockup",
+   "sub": "Pairs: 1.32 s under the letters, then the cut the last letter lands on. Left is under the letters, right is after the cut.",
+   "pick": 1,
+   "notes": true,
+   "items": [
+    {
+     "name": "Pearl River, then the sky above it",
+     "meta": "U1_pearl_river_and_sky",
+     "desc": "The v3 pair. Rich blue, then pale.",
+     "rec": true,
+     "tag": "",
+     "media": "media/U1_pearl_river_and_sky.mp4"
+    },
+    {
+     "name": "Cargo ship, then Guangzhou skyline",
+     "meta": "U3_ship_and_skyline",
+     "desc": "The v2 pair. Subjects, not surfaces.",
+     "rec": false,
+     "tag": "",
+     "media": "media/U3_ship_and_skyline.mp4"
+    },
+    {
+     "name": "Pink satchels, then pink fabric",
+     "meta": "U4_satchels_and_fabric",
+     "desc": "The v1 pair. CheekyGlo product.",
+     "rec": false,
+     "tag": "",
+     "media": "media/U4_satchels_and_fabric.mp4"
+    }
+   ]
+  }
+ ]
+};
+
+
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+/* No hard caps: every section is free multi-select. `pick` is a SUGGESTED count only. */
+const state={}, notes={};
+DECK.sections.forEach(s=>{ state[s.key]= new Set(); notes[s.key]={}; });
+
+document.getElementById('title').textContent=DECK.title||'Deck';
+document.getElementById('intro').textContent=DECK.intro||'';
+document.getElementById('stamp').textContent=DECK.stamp||'';
+if(DECK.globalNote){ document.getElementById('globalWrap').style.display='block';
+  document.getElementById('gnoteLabel').textContent=DECK.globalNote.label||'Notes';
+  document.getElementById('gnote').placeholder=DECK.globalNote.placeholder||''; }
+
+const root=document.getElementById('sections');
+DECK.sections.forEach(s=>{
+  const h=document.createElement('h2'); h.innerHTML=`${s.label} <span class="ct" id="ct-${s.key}"></span>`; root.appendChild(h);
+  if(s.sub){ const p=document.createElement('p'); p.className='sub'; p.textContent=s.sub; root.appendChild(p); }
+  const box=document.createElement('div'); box.id='sec-'+s.key; root.appendChild(box);
+  s.items.forEach((o,i)=> box.appendChild(card(s,i,o)));
+});
+
+function card(s,i,o){
+  const el=document.createElement('div'); el.className='card'+(s.mode==='single'?' radio':''); el.dataset.k=s.key; el.dataset.i=i;
+  const rec=o.rec?'<span class="rec">★ rec</span>':'';
+  const tag=o.tag?`<span class="tag">${o.tag}</span>`:'';
+  const meta=o.meta?`<div class="meta">${o.meta}</div>`:'';
+  const vid=o.media?`<video class="vid" src="${o.media}" muted loop playsinline preload="metadata"></video>`:'';
+  const note=s.notes?`<div class="note"><label>your note (optional)</label><textarea placeholder="note on this pick..."></textarea></div>`:'';
+  el.innerHTML=`<div class="row"><div class="tick">${CHECK}</div><div class="body">${vid}<div class="name">${o.name}${rec}${tag}</div>${meta}<div class="desc">${o.desc||''}</div>${note}</div></div>`;
+  el.addEventListener('click',e=>{ if(e.target.tagName==='TEXTAREA')return; toggle(s,i,el); });
+  const ta=el.querySelector('textarea'); if(ta){ ta.addEventListener('click',e=>e.stopPropagation()); ta.addEventListener('input',e=>{ notes[s.key][i]=e.target.value; }); }
+  return el;
+}
+function toggle(s,i,el){
+  const set=state[s.key];
+  if(set.has(i)){ set.delete(i); el.classList.remove('sel'); }
+  else { set.add(i); el.classList.add('sel'); }
+  update();
+}
+function selCount(s){ return state[s.key].size; }
+function totalCount(){ return DECK.sections.reduce((t,s)=>t+selCount(s),0); }
+function update(){
+  DECK.sections.forEach(s=>{ const c=document.getElementById('ct-'+s.key); c.textContent=`suggest ${s.pick} · ${selCount(s)} selected`; c.className='ct'+(selCount(s)>0?' full':''); });
+  const total=totalCount(); const btn=document.getElementById('copy'); btn.disabled=total===0; btn.classList.remove('done'); btn.textContent='Copy prompt';
+  document.getElementById('status').innerHTML = total===0
+    ? 'Select anything. No limits, the prompt carries whatever you pick.'
+    : `<b>${total}</b> pick${total===1?'':'s'} in the prompt. Suggested counts are guidance only.`;
+}
+function buildPrompt(){
+  let L=['== '+(DECK.promptHeader||'deck')+' =='];
+  DECK.sections.forEach(s=>{
+    if(selCount(s)===0) return;
+    L.push(`${s.label} (${selCount(s)} picked, ${s.pick} suggested):`);
+    [...state[s.key]].forEach((i,n)=>{ const o=s.items[i]; const nt=notes[s.key][i]?` [note: ${notes[s.key][i].trim()}]`:''; L.push(`  ${n+1}. ${o.name}${nt}`); });
+  });
+  const g=DECK.globalNote? document.getElementById('gnote').value.trim():'';
+  if(g) L.push('NOTES: '+g);
+  L.push('> Counts are my call, work with exactly what I ticked.');
+  if(DECK.promptAction) L.push('> '+DECK.promptAction);
+  return L.join('\n');
+}
+document.getElementById('copy').addEventListener('click',async()=>{
+  const txt=buildPrompt();
+  try{ await navigator.clipboard.writeText(txt); }catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+  const b=document.getElementById('copy'); b.classList.add('done'); b.textContent='Copied · paste it to Claude'; setTimeout(()=>{ if(!b.disabled){b.classList.remove('done'); b.textContent='Copy prompt';} },2600);
+});
+update();
+const io=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target; if(e.isIntersecting){v.play().catch(()=>{});} else {v.pause();}}),{threshold:.25});
+document.querySelectorAll('video.vid').forEach(v=>io.observe(v));
+</script>
+</body>
+</html>
